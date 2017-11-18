@@ -544,9 +544,12 @@
   });
 
   // Safely create a real, live array from anything iterable.
-  //转换数组
+   // 伪数组 -> 数组
+  // 对象 -> 提取 value 值组成数组
+  // 返回数组
   _.toArray = function(obj) {
     if (!obj) return [];
+    // 如果是数组，则返回副本数组
     if (_.isArray(obj)) return slice.call(obj);
     if (isArrayLike(obj)) return _.map(obj, _.identity);
     return _.values(obj);
@@ -561,7 +564,8 @@
 
   // Split a collection into two arrays: one whose elements all satisfy the given
   // predicate, and one whose elements all do not satisfy the predicate.
-  //拆分一个数组（array）为两个数组：  第一个数组其元素都满足predicate迭代函数， 而第二个的所有元素均不能满足predicate迭代函数。
+  //拆分一个数组（array）为两个数组：  第一个数组其元素都满足predicate迭代函数， 
+  ///而第二个的所有元素均不能满足predicate迭代函数。
   _.partition = function(obj, predicate, context) {
     predicate = cb(predicate, context);
     var pass = [], fail = [];
@@ -578,7 +582,10 @@
   // Get the first element of an array. Passing **n** will return the first N
   // values in the array. Aliased as `head` and `take`. The **guard** check
   // allows it to work with `_.map`.
-  //返回array（数组）的第一个元素。传递 n参数将返回数组中从第一个元素开始的n个元素（愚人码头注：返回数组中前 n 个元素.）
+  //返回array（数组）的第一个元素。传递 n参数将返回数组中从第一个元素开始的n个元素
+  //（返回数组中前 n 个元素.）
+  //_.first([5, 4, 3, 2, 1]);
+  //=> 5
   _.first = _.head = _.take = function(array, n, guard) {
     if (array == null) return void 0;
     // 如果传入参数 n，则返回前 n 个元素组成的数组
@@ -616,7 +623,8 @@
   };
 
   // Trim out all falsy values from an array.
-  //返回一个除去所有false值的 array副本。 在javascript中, false, null, 0, "", undefined 和 NaN 都是false值.
+  //返回一个除去所有false值的 array副本。 在javascript中, false, null, 0, "", 
+  //undefined 和 NaN 都是false值.
   _.compact = function(array) {
     return _.filter(array, _.identity);
   };
@@ -629,14 +637,19 @@
       //子数组
       var value = input[i];
       //判断是否是数组
-      console.log(value)
       if (isArrayLike(value) && (_.isArray(value) || _.isArguments(value))) {
         //flatten current level of array or arguments object
-        //递归
-        //如果深层展开,那么执行flatten函数递归，要注意不管执行几次，执行完后，就会往下走到while，每次执行完后会返回一个output，就是最后我们经过
-        //这个判断拿到的value(我们要的原数组中的一个子数组)，然后往下走
-        //所以这个flatten是帮我们提取出来一个子数组
+        //递归->深层展开
+        //假设shallow是false，那么要全部剥离出来。首先进入到是数组的判断里面，
+        //然后再进入判断，调用faltten，可以想象当下个调用flatten是个数组再进入这个判断，又再会
+        //调用flatten，所以是个递归一直调用，直到最后不是数组进入到else if的里面
+        //可以想象，如果去掉if(!shallow)的判断，或者shallow为true，
+        //那么就只解套一次
+        // 所以递归展开到最后value是个没有嵌套的数组，再执行while
         if (!shallow) value = flatten(value, shallow, strict);
+        // 递归展开到最后一层（没有嵌套的数组了）
+        // 或者 (shallow === true) => 只展开一层
+        // value 值肯定是一个数组
         var j = 0, len = value.length;
         output.length += len;
         //然后再把提取的子数组里面的值复制给返回数组
@@ -656,7 +669,8 @@
   };
 
   // Flatten out an array, either recursively (by default), or just one level.
-  //将一个嵌套多层的数组 array（数组） (嵌套可以是任何层数)转换为只有一层的数组。 如果你传递 shallow参数，数组将只减少一维的嵌套。
+  //将一个嵌套多层的数组 array（数组） (嵌套可以是任何层数)转换为只有一层的数组。 
+  //如果你传递 shallow参数，数组将只减少一维的嵌套。
   _.flatten = function(array, shallow) {
     return flatten(array, shallow, false);
   };
@@ -680,7 +694,8 @@
   // 对迭代之后的结果进行去重
   _.uniq = _.unique = function(array, isSorted, iteratee, context) {
     if (array == null) return [];
-    //是否已经排序，运行最快的算法
+    // 没有传入 isSorted 参数
+    // 转为 _.unique(array, false, undefined, iteratee)
     if (!_.isBoolean(isSorted)) {
       context = iteratee;
       iteratee = isSorted;
@@ -722,6 +737,8 @@
 
   // Produce an array that contains every item shared between all the
   // passed-in arrays.
+  //_.intersection([1, 2, 3], [101, 2, 1, 10], [2, 1]);
+  //=> [1, 2]
   //返回传入 arrays（数组）交集。结果中的每个值是存在于传入的每个arrays（数组）里。
   _.intersection = function(array) {
     if (array == null) return [];
@@ -750,6 +767,8 @@
   // Only the elements present in just the first array will remain.
   //类似于without，但返回的值来自array参数数组，并且不存在于other 数组.
   //_.difference(array, *others) 
+  //_.difference([1, 2, 3, 4, 5], [5, 2, 10]);
+  //=> [1, 3, 4]
   _.difference = function(array) {
     //把参数arguments作为一个数组传第一个参数，获取只减少一维的嵌套，而且第四个参数为1，所以获取数组的第二个子数组
     var rest = flatten(arguments, true, true, 1);
@@ -901,6 +920,15 @@
 
   // Use a comparator function to figure out the smallest index at which
   // an object should be inserted so as to maintain order. Uses binary search.
+  //_.sortedIndex([10, 20, 30, 40, 50], 35);
+  //=> 3
+
+  //var stooges = [{name: 'moe', age: 40}, {name: 'curly', age: 60}];
+  //_.sortedIndex(stooges, {name: 'larry', age: 50}, 'age');
+  //=> 1
+  // 二分查找
+  // 将一个元素插入已排序的数组
+  // 返回该插入的位置下标
   _.sortedIndex = function(array, obj, iteratee, context) {
     //初始化值
     iteratee = cb(iteratee, context, 1);
