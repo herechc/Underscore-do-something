@@ -23,7 +23,29 @@ body{
 </body>
 <script>
   window.onload = function () {
-   
+
+    /* sortIndex start */
+    /* 返回对象的索引数组，传reject为取相反的数组
+     * example
+     */
+    var people = [{name:'lili',old:2},{name:'ada',old:18},{name:'mda',old:22},{name:'hali',old:42},{name:'ali',old:14}]
+    sortIndex(people, [1,4])
+
+    function sortIndex(obj,arr,reject){
+      var  result = []
+      var  other = []
+      for(var i=0; i < obj.length; i++){
+        for(var j = 0; j < arr.length; j++){
+          if(i == arr[j]){
+            result.push(obj[i])
+            break
+          }
+          if(j == arr.length - 1) other.push(obj[i])
+        }
+      }
+      return !reject ? result : other
+    }
+    /* sortIndex end */
   }
 </script>
 
